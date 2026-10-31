@@ -1,0 +1,53 @@
+.board-detail-page{
+    padding-left:3rem;
+    padding-top:2rem;
+    padding-bottom:2rem;
+
+    display:flex;
+
+    gap:2rem;
+
+    overflow-x:scroll;
+}
+
+
+.board-detail-page {
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+}
+
+.board-detail-page::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+}
+
+
+.board-detail-page-board-name{
+    margin-top:2rem;
+    font-size:1rem;
+    display:flex;
+    align-items:center;
+    padding-left:2rem;
+    font-family:Helvetica;
+    height:3rem;
+    color:rgb(199, 109, 45);
+    font-weight:bold;
+
+    background: rgba(167, 173, 185, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    width:18.75rem;
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    border:1px solid rgb(228, 221, 221);
+}
+
+.board-detail-page-board-name:hover{
+    border:3px solid rgb(47, 123, 221);
+    border-left:none;
+
+    /* background: rgba(108, 99, 99, 0.25); */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+}

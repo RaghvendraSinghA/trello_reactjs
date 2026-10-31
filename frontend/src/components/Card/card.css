@@ -1,0 +1,94 @@
+.card{
+    font-family:Helvetica;
+    /* border:2px solid red; */
+    min-height:1rem;
+    border-radius:0.5rem;
+    display:flex;
+    align-items:center;
+    padding-left:0.5rem;
+    background-color:rgb(237, 233, 233);
+    font-size:0.9rem;
+
+    justify-content:space-between;
+    color:rgb(2, 2, 58);
+
+    /* min-width: 0; */
+    /* flex: 1 1 auto; */
+    /* overflow-wrap: anywhere; */
+    word-break: break-word;
+    padding-top:0.4rem;
+    padding-bottom:0.4rem;
+    border:3px solid rgb(237, 233, 233);
+}
+
+
+.card-actions{
+    /* border:1px solid blue; */
+    display:flex;
+    align-items:center;
+    gap:1rem;
+    padding-right:0.5rem;
+}
+
+.card:hover{
+    border:3px solid rgb(47, 123, 221);
+}
+
+.card-actions .edit-btn{
+    height:1.5rem;
+    width:1.5rem;
+}
+
+.card-actions .delete-btn{
+    height:1.5rem;
+    width:1.5rem;
+}
+
+
+.card-name-input{
+    border:none;
+    outline:none;
+    font-size:0.9rem;
+    background:transparent;
+    color:rgb(2, 2, 58);
+}
+
+
+
+/* animation */
+
+.card {
+    /* Bounce animation */
+    animation: bounceInY 0.6s ease-out both;
+}
+
+
+@keyframes bounceInY {
+    0% {
+        opacity: 0;
+        transform: translateY(-25px);
+    }
+
+    25% {
+        opacity: 1;
+        transform: translateY(8px);
+    }
+
+    45% {
+        transform: translateY(-6px);
+    }
+
+    65% {
+        transform: translateY(4px);
+    }
+
+    82% {
+        transform: translateY(-2px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+

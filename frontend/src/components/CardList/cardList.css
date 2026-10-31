@@ -1,0 +1,110 @@
+.cardlist{
+    min-height:0rem;
+    width:19.18rem;
+    flex-shrink:0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    border:1px solid rgb(239, 236, 236);
+    border-radius:0.7rem;
+    padding:1rem;
+    align-self: flex-start;
+}
+
+.cardlist-header{
+    display:flex;
+    justify-content:space-between;
+    /* border:1px solid rgb(232, 226, 226); */
+    height:2rem;
+    align-items:center;
+
+}
+
+
+.cardlist-header .cardlist-name{
+    font-family:Helvetica;
+    font-weight:bold;
+    font-size:1rem;
+    color:rgb(1, 1, 64);
+}
+
+
+.cardlist-actions{
+   display:flex;
+   justify-content:space-between; 
+   gap:0.5rem;
+}
+
+.cards-container{
+    /* border:1px solid orange; */
+    margin-top:0.5rem;
+    display:flex;
+    flex-direction:column;
+    gap:0.5rem;
+}
+
+
+.cardlist-actions .edit-btn{
+    height:1.7rem;
+    width:1.7rem;
+}
+
+.cardlist-actions .delete-btn{
+    height:1.7rem;
+    width:1.7rem;
+}
+
+
+.add-new-card{
+    margin-top:1rem;
+    display:flex;
+    justify-content:space-between;
+    height:3rem;
+    align-items:center;
+    gap:0.5rem;
+    padding-right:0.5rem;
+    
+}
+
+.add-card-input{
+    padding:5px;
+    flex:1;
+    height:1.5rem;
+    font-size:1.1rem;
+    border:none;
+    outline:none;
+}
+
+.add-icon{
+    height:1.5rem;
+    width:1.5rem;
+    cursor:pointer;
+}
+
+.add-icon:hover{
+    background-color:rgb(242, 235, 235);
+    border-radius:3px;
+}
+
+.cardlist-name-input{
+    height: 2rem;
+    flex: 1;
+    outline: none;
+    border: none;
+    font-size:1rem;
+    font-weight:bold;
+    color:rgb(1, 1, 64);
+}
+
+
+/* Testing animation */
+
+
+.cards-container .card:nth-child(2n + 1) {
+    animation-delay: 0.1s;
+}
+
+.cards-container .card:nth-child(2n) {
+    animation-delay: 0.2s;
+}
+
+
+
