@@ -16,6 +16,12 @@ function DataProvider({ children }) {
     const [loading, setLoading] = useState(false)
     const [fetchedCardListsFromDb, setFetchedCardListsFromDb] = useState(new Set())
     const [fetchedBoardsFromDb, setFetchedBoardsFromDb] = useState(new Set())
+    const [openPopUp, setOpenPopUp] = useState(false)
+    const [popUpData, setPopUpData] = useState([])
+
+
+    const [fetchedCardsForPopUp, setFetchedCardsForPopUp] = useState({})
+    const [currentPopUpCard, setCurrentPopCard] = useState({})
 
 
 
@@ -241,7 +247,7 @@ function DataProvider({ children }) {
 
         } catch (error) {
             console.log(error)
-        }finally{
+        } finally {
             setCardLoading(false)
         }
 
@@ -397,9 +403,181 @@ function DataProvider({ children }) {
         }
     }
 
+
+
+
+
+
+    async function handlePopUpData(cardId, name) {
+        setCurrentPopCard({ cardId, name })
+
+        if (fetchedCardsForPopUp[cardId]) {
+            console.log("already fetched cardId", cardId)
+            return fetchedCardsForPopUp[cardId]
+        }
+
+        try {
+            const url = `https://api.trello.com/1/cards/${cardId}/checklists?checkItems=all&key=${API_KEY}&token=${TOKEN}`
+
+            const response = await fetch(url)
+            const data = await response.json()
+            console.log("data", data)
+
+            setFetchedCardsForPopUp((prev) => ({ ...prev, [cardId]: data }))
+            return data
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    async function handleAddChecklist(cardId, checkListName, setIsCreatingChecklist) {
+
+        try {
+            console.log("called handleAddChecklist")
+            const url =
+                `https://api.trello.com/1/cards/${cardId}/checklists` +
+                `?key=${API_KEY}` +
+                `&token=${TOKEN}` +
+                `&name=${encodeURIComponent(checkListName)}`
+
+            const response = await fetch(url, {
+                method: "POST"
+            })
+
+            if (!response.ok) {
+                throw new Error(await response.text())
+            }
+
+            const checkList = await response.json()
+            setPopUpData((prev) => {
+                return [...(prev || []), checkList]
+            })
+            setIsCreatingChecklist(false)
+
+        } catch (error) {
+            console.log(error)
+        }
+
+
+    }
+
+    async function handleRenameChecklist() {
+
+    }
+
+    async function handleDeleteChecklist() {
+
+    }
+
+
+    async function handleAddCheckItem(checkListId, name, setPostingNewCheckItem) {
+
+        try {
+            const url =
+                `https://api.trello.com/1/checklists/${checkListId}/checkItems` +
+                `?key=${API_KEY}` +
+                `&token=${TOKEN}` +
+                `&name=${encodeURIComponent(name)}`
+
+            const response = await fetch(url, {
+                method: "POST"
+            });
+
+            if (!response.ok) {
+                throw new Error(await response.text())
+            }
+
+            const checkItem = await response.json()
+
+            setPopUpData((prev) => {
+
+                const updatedPopUpData = prev.map((checklist) => {
+
+                    if (checklist["id"] == checkListId) {
+                        return { ...checklist, ["checkItems"]: [...(checklist["checkItems"] || []), checkItem] }
+                    }
+
+                    return checklist
+                })
+                return updatedPopUpData
+            })
+
+            setPostingNewCheckItem(false)
+
+        } catch (error) {
+            console.log(error)
+        }
+
+    }
+
+    async function handleRenameCheckItem() {
+
+    }
+
+    async function handleDeleteCheckItem() {
+
+    }
+
+
+    async function handleMarkCheckItem(cardId, checklistId, checkItemId, isChecked) {
+
+        setPopUpData((prev) => {
+
+            const updatedPopUpData = prev.map((checklist) => {
+
+                if (checklist["id"] == checklistId) {
+                    const upadateChecklist = { ...checklist }
+                    const updatedCheckItems = [...checklist["checkItems"]]
+
+                    for (const checkItem of updatedCheckItems) {
+                        if (checkItem["id"] == checkItemId) {
+                            checkItem["state"] = isChecked ? "complete" : "incomplete"
+                        }
+                    }
+
+                    upadateChecklist["checkItems"] = updatedCheckItems
+                }
+
+                return checklist
+            })
+            return updatedPopUpData
+        })
+
+
+        try {
+            const url = new URL(
+                `https://api.trello.com/1/cards/${cardId}/checklist/${checklistId}/checkItem/${checkItemId}`
+            );
+
+            url.searchParams.set("key", API_KEY)
+            url.searchParams.set("token", TOKEN)
+            url.searchParams.set("state", isChecked ? "complete" : "incomplete")
+
+            const response = await fetch(url, {
+                method: "PUT"
+            });
+
+            if (!response.ok) {
+                throw new Error(await response.text())
+            }
+
+            return await response.json()
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+
+
     useEffect(() => {
         handleFetchAllBoards()
     }, [])
+
+    useEffect(() => {
+        console.log("popUpData", popUpData)
+    }, [popUpData])
 
     // useEffect(() => {
     //     console.log("boards", boards)
@@ -443,7 +621,30 @@ function DataProvider({ children }) {
 
         handleRenameCardList,
 
-        handleRenameCard
+        handleRenameCard,
+
+        openPopUp,
+        setOpenPopUp,
+
+        handlePopUpData,
+        popUpData,
+        setPopUpData,
+        currentPopUpCard,
+        setCurrentPopCard,
+
+        handleAddChecklist,
+
+        handleRenameChecklist,
+
+        handleDeleteChecklist,
+
+        handleAddCheckItem,
+
+        handleRenameCheckItem,
+
+        handleDeleteCheckItem,
+
+        handleMarkCheckItem
     }
 
     return (

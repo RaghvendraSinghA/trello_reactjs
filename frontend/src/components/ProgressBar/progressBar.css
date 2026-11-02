@@ -1,0 +1,68 @@
+.progressbar-container {
+    height: 1rem;
+    width: 100%;
+    background-color: rgb(38, 38, 38);
+
+    display: flex;
+    align-items: center;
+    gap:1rem;
+}
+
+.progress-count{
+    font-size:0.875rem;
+    font-family:Helvetica ;
+}
+
+/* Background track */
+.progressbar-track {
+    width: 100%;
+    height: 2px;
+    background-color: rgb(65, 65, 65);
+    position: relative;
+    overflow: visible;
+}
+
+/* Light-green progress line */
+.progressbar-fill {
+    height: 4px;
+    background-color: lightgreen;
+    position: relative;
+
+    transition: width 0.5s ease-in-out;
+}
+
+/* Glowing shooting effect at the end */
+.progressbar-fill::after {
+    content: "";
+    position: absolute;
+
+    right: -2px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    width: 14px;
+    height: 6px;
+
+    background: linear-gradient(
+        90deg,
+        rgba(144, 238, 144, 0),
+        lightgreen
+    );
+
+    border-radius: 50%;
+    filter: blur(2px);
+
+    animation: shootingGlow 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes shootingGlow {
+    from {
+        opacity: 0.5;
+        filter: blur(2px);
+    }
+
+    to {
+        opacity: 1;
+        filter: blur(4px);
+    }
+}

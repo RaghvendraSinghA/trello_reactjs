@@ -72,4 +72,18 @@ Use index.css or style.css for common shared css and each component css, create 
 
 If you import App.css or index.css, their regular CSS styles are generally available throughout your application, regardless of which component you import them into. index.css have globally effect because, it gets imported in main.jsx which is root Component of react project.
 
+
+
+
+PopUpData---->
+
+    popUpData is in ContextStore, popup Component is getting data directly from conetxt store from variable popUpData,
+
+    how popUpData is getting setteled ? Who and how setting ?
+
+    - card is calling handlePopUpData function of contextStore getting the data then,card is setting the context popUpData variable and then popup Compeonent gets the data. card is also opening the popup component.
+
+
+    --Cardname and cardId is also stored in context store.
+
 ```

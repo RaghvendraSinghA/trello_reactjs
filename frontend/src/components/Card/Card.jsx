@@ -7,7 +7,7 @@ import {DataContext} from "../../context/DataStore.jsx"
 
 function Card({ card }) {
 
-    const {handleDeleteCard, handleRenameCard} = useContext(DataContext)
+    const {handleDeleteCard, handleRenameCard, setOpenPopUp, handlePopUpData, setPopUpData, loading, setLoading} = useContext(DataContext)
      const renameInput = useRef({})
     const [isEditing, setEditing] = useState(false)
 
@@ -17,20 +17,33 @@ function Card({ card }) {
     // console.log(card)
     // console.log(card["id"])
 
-    const handleDeleteBtn = () => {
+    // console.log("cardname", card["name"])
+
+    const handleDeleteBtn = (event) => {
+        event.stopPropagation()
         handleDeleteCard(card["id"])
     }
 
-    const handleRenameClick = () =>{
+    const handleRenameClick = (event) =>{
+        event.stopPropagation()
         setEditing(true)
     }
 
     const renameCurrCard = (event) =>{
-        
+    
         if(event.key == "Enter"){
             handleRenameCard(card["id"],renameInput.current.value)
             setEditing(false)
         }
+    }
+
+    const handleCardPopUpOpen = async (event) =>{
+        setOpenPopUp(true)
+        setLoading(true)
+        const cardPopUpData = await handlePopUpData(card["id"], card["name"])
+        // console.log("cardPopUpData", cardPopUpData)
+        setPopUpData(cardPopUpData)
+        setLoading(false)
     }
 
     useEffect(() => {
@@ -40,14 +53,13 @@ function Card({ card }) {
     }, [isEditing])
 
     return (
-        <div className="card">
-            {/* <div className="card-name">{card?.name}</div> */}
+        <div className="card" onClick={(event)=>handleCardPopUpOpen(event)}>
 
             {isEditing ? <input ref={renameInput} className="card-name-input" placeholder="Enter new name" onKeyDown={renameCurrCard} defaultValue={card.name}/> : <div className="card-name">{card?.name}</div>}
 
             <div className="card-actions">
-                <img className="edit-btn" src={editIcon} alt="edit_btn" onClick={handleRenameClick}/>
-                <img className="delete-btn" src={deleteIcon} alt="delete-btn" onClick={() => handleDeleteBtn()} />
+                <img className="edit-btn" src={editIcon} alt="edit_btn" onClick={(event)=>handleRenameClick(event)}/>
+                <img className="delete-btn" src={deleteIcon} alt="delete-btn" onClick={(event)=>handleDeleteBtn(event)} />
             </div>
         </div>
     )

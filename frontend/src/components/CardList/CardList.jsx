@@ -49,7 +49,7 @@ function CardList({ cardList }) {
         setEditing(true)
     }
 
-    const handleRenameCurrCardListInput = (event) =>{
+    const handleRenameCurrCardListInput = (event) => {
 
         if (event.key == "Enter") {
             handleRenameCardList(cardList["id"], renameInput.current.value)
@@ -71,7 +71,8 @@ function CardList({ cardList }) {
 
                 <div className="cardlist-header">
 
-                    {isEditing ? <input onKeyDown={handleRenameCurrCardListInput} ref={renameInput} className="cardlist-name-input" placeholder="Enter new name" /> : <div className="cardlist-name">{cardList.name}</div>}
+                    {isEditing ? <input onKeyDown={handleRenameCurrCardListInput} defaultValue={cardList.name}
+                        ref={renameInput} className="cardlist-name-input" placeholder="Enter new name" /> : <div className="cardlist-name">{cardList.name}</div>}
 
                     <div className="cardlist-actions">
                         <img className="edit-btn" src={editIcon} alt="edit_btn" onClick={handleRenameCurrCardList} />
@@ -94,7 +95,7 @@ function CardList({ cardList }) {
 
                     {/* <img className="add-icon" alt="add-card" src={addIcon} onClick={() => handleAddBtn()} /> */}
 
-                    {isCardLoading?<Spinner containerClassName="spinner-container" spinnerClassName="card-spinner"/>
+                    {isCardLoading ? <Spinner containerClassName="spinner-container" spinnerClassName="card-spinner" />
                         : <img className="add-icon" alt="add-card" src={addIcon} onClick={() => handleAddBtn()} />
                     }
 

@@ -1,0 +1,160 @@
+.card-overlay {
+    height: 10rem;
+    top: 0px;
+    left: 0px;
+    z-index: 1;
+    background-color: grey;
+    position: absolute;
+    min-height: 100vh;
+    min-width: 100vw;
+
+    background-color: rgba(0, 0, 0, 0.5);
+
+    display:flex;
+    justify-content:center;
+    color:rgb(216, 212, 212);
+    font-family:Helvetica;
+}
+
+.card-popup{
+    height:80vh;
+    width:77vw;
+    background-color:rgb(38, 38, 38);
+    border-radius:0.8rem;
+    margin-top:3rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    
+}
+
+.card-popup-name-and-actions{
+    display:flex;
+    justify-content:space-between;
+    height:4rem;
+    align-items:center;
+    padding-right:1.5rem;
+    padding-left:1.5rem;
+    border-bottom:1px solid rgba(91, 88, 88, 0.5);
+}
+
+.popup-card-name{
+    color:rgb(216, 212, 212);
+    font-size:1.8rem;
+    font-weight:bold;
+    font-family:Helvetica;
+    letter-spacing:0.14px;
+}
+
+
+.edit-popup-cardname{
+    height:2.5rem;
+    width:2.5rem;
+    cursor:pointer;
+}
+
+.close-card-popup-btn{
+    height:2.5rem;
+    width:2.5rem;
+    cursor:pointer;
+    border-radius:100%;
+    padding:0.25rem;
+}
+
+.close-card-popup-btn:hover{
+    background-color:rgb(94, 90, 90);
+    border-radius:100%;
+}
+
+
+.edit-and-close-card-popup{
+    /* border:1px solid white; */
+    display:flex;
+    align-items:center;
+    gap:1rem;
+}
+
+.edit-popup-cardname:hover{
+    border:1px solid white;
+    border-radius:5px;
+}
+
+
+.add-checklist{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding-left:1.5rem;
+    padding-right:1.5rem;
+    min-height:3rem;
+    gap:0.5rem;
+    padding-top:2rem;
+    /* border:1px solid white; */
+    padding-bottom:1rem;
+}
+
+
+.add-popup-checklist-btn{
+    height:2rem;
+    width:2rem;
+    cursor:pointer;
+}
+
+.add-popup-checklist-btn:hover{
+    background-color:rgba(74, 72, 72, 0.8);
+    border-radius:3px;
+}
+
+
+.popup-add-checklist-input{
+    flex:1;
+    height:2.8rem;
+    border-radius:0.5rem;
+    padding-left:1rem;
+    font-size:1.2rem;
+    border:none;
+    outline:none;
+    background:transparent;
+    color:rgb(216, 212, 212);
+    border:1px solid rgba(170, 168, 168, 0.5);
+}
+
+
+.checklist-container {
+    /* border: 1px solid rgb(62, 233, 62); */
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    overflow-y:scroll;
+    height: 72%;
+
+    /* Hide scrollbar */
+    scrollbar-width: none;      /* Firefox */
+    -ms-overflow-style: none;   /* Internet Explorer */
+
+    padding-top: 1rem;
+}
+
+.checklist-container::-webkit-scrollbar {
+    display: none;              /* Chrome, Safari */
+}
+
+
+.rename-popup-card{
+    background-color:transparent;
+    color: rgb(216, 212, 212);
+    font-size: 1.8rem;
+    font-weight: bold;
+    font-family: Helvetica;
+    letter-spacing: 0.14px;
+    outline:none;
+    border:none;
+}
+
+
+
+
+
+
+
+
