@@ -5,12 +5,12 @@
 
     display: flex;
     align-items: center;
-    gap:1rem;
+    gap: 1rem;
 }
 
-.progress-count{
-    font-size:0.875rem;
-    font-family:Helvetica ;
+.progress-count {
+    font-size: 0.875rem;
+    font-family: Helvetica;
 }
 
 /* Background track */
@@ -29,40 +29,48 @@
     position: relative;
 
     transition: width 0.5s ease-in-out;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
 }
+
+
 
 /* Glowing shooting effect at the end */
 .progressbar-fill::after {
     content: "";
     position: absolute;
 
-    right: -2px;
+    right: -4px;
     top: 50%;
     transform: translateY(-50%);
 
-    width: 14px;
-    height: 6px;
+    width: 18px;
+    /* Increased width */
+    height: 10px;
+    /* Increased height */
 
-    background: linear-gradient(
-        90deg,
-        rgba(144, 238, 144, 0),
-        lightgreen
-    );
+    background: linear-gradient(90deg,
+            rgba(100, 180, 255, 0),
+            lightgreen,
+            #ffffff);
 
     border-radius: 50%;
-    filter: blur(2px);
+    filter: blur(4px);
 
     animation: shootingGlow 0.8s ease-in-out infinite alternate;
+
 }
 
 @keyframes shootingGlow {
     from {
-        opacity: 0.5;
-        filter: blur(2px);
+        opacity: 0.6;
+        filter: blur(3px);
     }
 
     to {
         opacity: 1;
-        filter: blur(4px);
+        filter: blur(7px);
     }
 }

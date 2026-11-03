@@ -14,6 +14,10 @@ function CheckList(props) {
     const [isPostingNewCheckItem, setPostingNewCheckItem] = useState(false)
     const { handleRenameChecklist, handleDeleteChecklist, handleAddCheckItem } = useContext(DataContext)
 
+    const [isEditingCheckListName, setEditingCheckListName] = useState(false)
+    const addCheckItemInput = useRef({})
+    const renameCheckListInput = useRef({})
+
     // console.log("chekclistprops", props)
     const checkListName = props["checklist"]["name"]
     const checkListId = props["checklist"]["id"]
@@ -23,20 +27,32 @@ function CheckList(props) {
     // console.log("cardId",cardId)
     // console.log("allCheckItems", allCheckItems)
 
-    const addCheckItemInput = useRef({})
+    // const addCheckItemInput = useRef({})
 
 
     const handleAddNewCheckItem = (event) => {
         setPostingNewCheckItem(true)
-        // console.log(addCheckItemInput.current.value)
-        handleAddCheckItem(checkListId, addCheckItemInput.current.value, setPostingNewCheckItem)
+        handleAddCheckItem(checkListId, addCheckItemInput.current.value, setPostingNewCheckItem, cardId)
         addCheckItemInput.current.value = ""
     }
 
     const handleOnKeyDownOfAddNewCheckItemInput = (event) => {
-        if(event.key=="Enter"){
+        if (event.key == "Enter") {
             handleAddNewCheckItem()
         }
+    }
+
+    const handleRenameCheckListCurr = (event) => {
+        if(event.key == "Enter"){
+            const newName = renameCheckListInput.current.value
+            handleRenameChecklist(checkListId, newName, cardId)
+            renameCheckListInput.current.value=""
+            setEditingCheckListName(false)
+        }
+    }
+
+    const handleDeleteCurrentChecklist = (event) =>{
+        handleDeleteChecklist(checkListId, cardId)
     }
 
 
@@ -47,24 +63,38 @@ function CheckList(props) {
         return accumluator
     }, 0)
 
-    useEffect(()=>{
+    useEffect(() => {
 
-        if(openAddCheckItemInput && addCheckItemInput.current){
+        if (openAddCheckItemInput && addCheckItemInput.current) {
             addCheckItemInput.current.focus()
         }
 
-    },[openAddCheckItemInput])
+    }, [openAddCheckItemInput])
+
+     useEffect(() => {
+
+        if (isEditingCheckListName && renameCheckListInput.current) {
+            renameCheckListInput.current.focus()
+        }
+
+    }, [isEditingCheckListName])
+
+    
 
     return (
         <div className="checklist">
 
             <div className="checklist-name-and-actions">
 
-                <div className="checklist-name">{checkListName ? checkListName : "CheckList from Component"}</div>
+                {isEditingCheckListName ?
+                    <input className="checklist-rename-input" defaultValue={checkListName} ref={renameCheckListInput} onKeyDown ={handleRenameCheckListCurr} />
+                    :
+                    <div className="checklist-name">{checkListName}</div>
+                }
 
                 <div className="checklist-actions">
-                    <img className="checklist-edit" alt="edit" src={editIcon} />
-                    <img className="checklist-delete" alt="delete" src={deleteIcon} />
+                    <img className="checklist-edit" alt="edit" src={editIcon} onClick={()=>setEditingCheckListName((prev)=>!prev)} />
+                    <img className="checklist-delete" alt="delete" src={deleteIcon} onClick={handleDeleteCurrentChecklist}/>
                 </div>
 
             </div>
@@ -88,7 +118,7 @@ function CheckList(props) {
                     :
                     <div className="add-check-item-btn-while-adding">
 
-                        <input ref={addCheckItemInput} className="add-check-item-input" placeholder="Add an item" onKeyDown={handleOnKeyDownOfAddNewCheckItemInput}/>
+                        <input ref={addCheckItemInput} className="add-check-item-input" placeholder="Add an item" onKeyDown={handleOnKeyDownOfAddNewCheckItemInput} />
 
                         <div className="add-check-item-actions">
                             {isPostingNewCheckItem == false ? <div className="add-check-item-btn" onClick={handleAddNewCheckItem}>Add</div>

@@ -10,7 +10,7 @@ import { Spinner } from "../Spinner/Spinner.jsx"
 
 function CardDetailPopUp() {
     const { setOpenPopUp, popUpData, handleAddChecklist, setPopUpData, currentPopUpCard, handleRenameCard, setCurrentPopCard, fetchedCardsForPopUp } = useContext(DataContext)
-    console.log("popUpData", popUpData)
+    // console.log("popUpData", popUpData)
     // console.log("cardId", cardId)
 
     // console.log("currentPopUpCard", currentPopUpCard)

@@ -388,24 +388,29 @@ function DataProvider({ children }) {
             })
         })
 
-        const url =
-            `https://api.trello.com/1/cards/${cardId}` +
-            `?key=${API_KEY}` +
-            `&token=${TOKEN}` +
-            `&name=${encodeURIComponent(newName)}`
+        try {
+            const url =
+                `https://api.trello.com/1/cards/${cardId}` +
+                `?key=${API_KEY}` +
+                `&token=${TOKEN}` +
+                `&name=${encodeURIComponent(newName)}`
 
-        const response = await fetch(url, {
-            method: "PUT"
-        });
+            const response = await fetch(url, {
+                method: "PUT"
+            });
 
-        if (!response.ok) {
-            throw new Error(await response.text())
+            if (!response.ok) {
+                throw new Error(await response.text())
+            }
+
+        } catch (error) {
+            console.log(error)
         }
     }
 
 
 
-
+    // popup and its handlers
 
 
     async function handlePopUpData(cardId, name) {
@@ -421,7 +426,6 @@ function DataProvider({ children }) {
 
             const response = await fetch(url)
             const data = await response.json()
-            console.log("data", data)
 
             setFetchedCardsForPopUp((prev) => ({ ...prev, [cardId]: data }))
             return data
@@ -432,6 +436,8 @@ function DataProvider({ children }) {
     }
 
     async function handleAddChecklist(cardId, checkListName, setIsCreatingChecklist) {
+
+        console.log("called handleAddChecklist")
 
         try {
             console.log("called handleAddChecklist")
@@ -453,6 +459,17 @@ function DataProvider({ children }) {
             setPopUpData((prev) => {
                 return [...(prev || []), checkList]
             })
+
+
+            setFetchedCardsForPopUp((prev) => {
+                const updatedFetchedCardsForPopUp = { ...prev }
+                const checklists = [...(updatedFetchedCardsForPopUp[cardId] || []), checkList]
+
+                updatedFetchedCardsForPopUp[cardId] = checklists
+
+                return updatedFetchedCardsForPopUp
+            })
+
             setIsCreatingChecklist(false)
 
         } catch (error) {
@@ -462,16 +479,113 @@ function DataProvider({ children }) {
 
     }
 
-    async function handleRenameChecklist() {
+    async function handleRenameChecklist(checkListId, newName, cardId) {
+
+        setPopUpData((prev) => {
+
+            return prev.map((checklist) => {
+
+                if (checklist["id"] == checkListId) {
+                    const updatedCheckList = { ...checklist }
+                    updatedCheckList["name"] = newName
+                    const checkItems = [...(checklist["checkItems"] || [])]
+                    updatedCheckList["checkItems"] = checkItems
+
+                    return updatedCheckList
+                }
+
+                return checklist
+            })
+        })
+
+        // setFetchedCardsForPopUp
+        // console.log(fetchedCardsForPopUp)
+        setFetchedCardsForPopUp((prev) => {
+            const updatedFetchedCardsPopUp = { ...prev }
+            const checkLists = [...updatedFetchedCardsPopUp[cardId]]
+
+            for (const checkList of checkLists) {
+                if (checkList["id"] == checkListId) {
+                    checkList["name"] = newName
+                }
+            }
+
+            updatedFetchedCardsPopUp[cardId] = checkLists
+
+            return updatedFetchedCardsPopUp
+        })
+
+        try {
+            const url =
+                `https://api.trello.com/1/checklists/${checkListId}` +
+                `?key=${API_KEY}` +
+                `&token=${TOKEN}` +
+                `&name=${encodeURIComponent(newName)}`
+
+            const response = await fetch(url, {
+                method: "PUT"
+            })
+
+            if (!response.ok) {
+                throw new Error(await response.text())
+            }
+
+            return await response.json()
+
+        } catch (error) {
+            console.log(error)
+        }
 
     }
 
-    async function handleDeleteChecklist() {
+    async function handleDeleteChecklist(checklistId, cardId) {
+        console.log("popUpData", popUpData)
+        console.log("fetchedCardsForPopUp", fetchedCardsForPopUp)
 
+        console.log("checklistId", checklistId)
+        console.log("cardId", cardId)
+
+        setPopUpData((prev) => {
+            return prev.filter((checklist) => {
+                return checklist["id"] != checklistId
+            })
+        })
+
+        setFetchedCardsForPopUp((prev) => {
+            const updatedFetchedCardsForPopUp = { ...prev }
+
+            const updatedChecklists = [...updatedFetchedCardsForPopUp[cardId]]
+                .filter((checklist) => {
+                    return checklist["id"] != checklistId
+                })
+
+            updatedFetchedCardsForPopUp[cardId] = updatedChecklists
+
+            return updatedFetchedCardsForPopUp
+        })
+
+        try {
+            const url =
+                `https://api.trello.com/1/checklists/${checklistId}` +
+                `?key=${API_KEY}` +
+                `&token=${TOKEN}`
+
+            const response = await fetch(url, {
+                method: "DELETE"
+            });
+
+            if (!response.ok) {
+                throw new Error(await response.text())
+            }
+
+            return await response.json()
+        } catch (error) {
+            console.log(error)
+        }
     }
 
 
-    async function handleAddCheckItem(checkListId, name, setPostingNewCheckItem) {
+    async function handleAddCheckItem(checkListId, name, setPostingNewCheckItem, cardId) {
 
         try {
             const url =
@@ -503,6 +617,32 @@ function DataProvider({ children }) {
                 return updatedPopUpData
             })
 
+            console.log("fetchedCardsForPopUp", fetchedCardsForPopUp)
+
+
+            setFetchedCardsForPopUp((prev) => {
+                const updatedFetchedCardsForPopUp = { ...prev }
+
+                const checklists = [...updatedFetchedCardsForPopUp[cardId]]
+                    .map((checklist) => {
+
+                        if (checklist["id"] == checkListId) {
+                            const checklistCheckItems = [...(checklist["checkItems"] || []), checkItem]
+
+                            const updatedCheckList = { ...checklist }
+                            updatedCheckList["checkItems"] = checklistCheckItems
+
+                            return updatedCheckList
+                        }
+
+                        return checklist
+                    })
+
+                updatedFetchedCardsForPopUp[cardId] = checklists
+
+                return updatedFetchedCardsForPopUp
+            })
+
             setPostingNewCheckItem(false)
 
         } catch (error) {
@@ -511,11 +651,118 @@ function DataProvider({ children }) {
 
     }
 
-    async function handleRenameCheckItem() {
+    async function handleRenameCheckItem(cardId, checkItemId, newName, checkListId) {
+
+        setPopUpData((prev) => {
+
+            return prev.map((checklist) => {
+
+                if (checklist["id"] == checkListId) {
+                    const updatedCheckList = { ...checklist }
+                    const checkItems = [...(checklist["checkItems"] || [])]
+
+                    for (const checkItem of checkItems) {
+                        if (checkItem["id"] == checkItemId) {
+                            checkItem["name"] = newName
+                        }
+                    }
+
+                    updatedCheckList["checkItems"] = checkItems
+                    return updatedCheckList
+                }
+
+                return checklist
+            })
+        })
+
+
+        console.log("calling renamecheckitem datastore fn with ", newName)
+
+        try {
+            const response = await fetch(
+                `https://api.trello.com/1/cards/${cardId}/checkItem/${checkItemId}?name=${encodeURIComponent(newName)}&key=${API_KEY}&token=${TOKEN}`,
+                {
+                    method: "PUT"
+                }
+            )
+
+            const data = await response.json()
+
+        } catch (error) {
+            console.log(error)
+        }
 
     }
 
-    async function handleDeleteCheckItem() {
+    async function handleDeleteCheckItem(cardId, checkListId, checkItemId) {
+
+        setPopUpData((prev) => {
+
+            const updatedPopUpData = prev.map((checklist) => {
+
+                if (checklist["id"] == checkListId) {
+                    const updatedChecklist = {...checklist}
+                    const checkItems = updatedChecklist["checkItems"]
+                        .filter((checkItem)=>{
+                            return checkItem["id"] != checkItemId
+                        })
+                    
+                    updatedChecklist["checkItems"] = checkItems
+
+                    return updatedChecklist
+                }
+
+                return checklist
+            })
+            return updatedPopUpData
+        })
+
+
+        setFetchedCardsForPopUp((prev) => {
+            const updatedFetchedCardsForPopUp = { ...prev }
+
+            const checklists = [...updatedFetchedCardsForPopUp[cardId]]
+                .map((checklist) => {
+
+                    if (checklist["id"] == checkListId) {
+                        const checklistCheckItems = [...checklist["checkItems"]]
+                        .filter((checkItem)=>{
+                            return checkItem["id"] != checkItemId
+                        })
+
+                        const updatedCheckList = { ...checklist }
+                        updatedCheckList["checkItems"] = checklistCheckItems
+
+                        return updatedCheckList
+                    }
+
+                    return checklist
+                })
+
+            updatedFetchedCardsForPopUp[cardId] = checklists
+
+            return updatedFetchedCardsForPopUp
+        })
+
+        try {
+            const url =
+                `https://api.trello.com/1/cards/${cardId}/checkItem/${checkItemId}` +
+                `?key=${API_KEY}` +
+                `&token=${TOKEN}`
+
+            const response = await fetch(url, {
+                method: "DELETE"
+            });
+
+            if (!response.ok) {
+                throw new Error(await response.text())
+            }
+
+            return await response.json()
+
+        } catch (error) {
+            console.log(error)
+        }
 
     }
 
@@ -575,19 +822,9 @@ function DataProvider({ children }) {
         handleFetchAllBoards()
     }, [])
 
-    useEffect(() => {
-        console.log("popUpData", popUpData)
-    }, [popUpData])
-
     // useEffect(() => {
-    //     console.log("boards", boards)
-
-    // }, [boards])
-
-    // useEffect(() => {
-    //     console.log("cards", cards)
-
-    // }, [cards])
+    //     console.log("popUpData", popUpData)
+    // }, [popUpData])
 
 
     const store = {

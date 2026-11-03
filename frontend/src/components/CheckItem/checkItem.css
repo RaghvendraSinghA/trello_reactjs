@@ -8,6 +8,7 @@
     padding-top:1.2rem;
     padding-bottom:1.2rem;
     padding-left:0.5rem;
+    gap:0.5rem;
 }
 
 .check-item-name-and-actions:hover{
@@ -19,6 +20,7 @@
     display:flex;
     align-items:center;
     gap:0.5rem;
+    flex:1;
 }
 
 .check-item-actions{
@@ -91,4 +93,13 @@
 
 .check-item-strikethrough{
     text-decoration:line-through;
+}
+
+.rename-checkItem-input{
+    background-color:transparent;
+    border:none;
+    outline:none;
+    color:rgb(230, 225, 225);
+    font-size:1rem;
+    flex:1;
 }

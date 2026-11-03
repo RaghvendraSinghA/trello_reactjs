@@ -2,7 +2,7 @@ import "./progressBar.css"
 
 
 function ProgressBar({ totalItems, completedItems }) {
-    const progress = totalItems === 0 ? 0 : Math.floor((completedItems / totalItems) * 100)
+    const progress = totalItems === 0 ? 0 : Math.ceil((completedItems / totalItems) * 100)
 
     return (
         <div className="progressbar-container">

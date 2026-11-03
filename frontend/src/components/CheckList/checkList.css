@@ -153,3 +153,16 @@
     flex-direction:column;
     justify-content:center;
 }
+
+.checklist-rename-input{
+    flex:1;
+    padding: 0.5rem;
+    font-weight: bold;
+    font-family: Helvetica;
+    font-size: 1.2rem;
+    padding-left: 0.3rem;
+    background-color:transparent;
+    border:none;
+    outline:none;
+    color:rgb(230, 225, 225);
+}
