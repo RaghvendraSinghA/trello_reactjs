@@ -1,105 +1,72 @@
+import express from "express"
+import { WebSocketServer, WebSocket } from "ws"
 
-const API_KEY = "b08e0c3d61bbed9d1070ce21be520b01"
-const TOKEN = "ATTA82b35392befe25f9b35d80a2ac28100919a0bd75326df748e9497b4a70a6bb181CDDBC28"
+const app = express()
 
-const BOARD_ID = "6ab0c5f4971b01c62976eb5e"
+app.use(express.json())
 
+const server = app.listen(3000, () => {
+    console.log("Backend running on http://localhost:3000")
+})
 
-//this return list of all boards of trello.
+const wss = new WebSocketServer({ server })
 
+wss.on("connection", (socket) => {
+    console.log("Browser connected")
 
-async function getAllBoards() {
-  const response = await fetch(
-    `https://api.trello.com/1/members/me/boards?key=${API_KEY}&token=${TOKEN}`
-  )
+    socket.on("close", () => {
+        console.log("Browser disconnected")
+    })
+})
 
-  const boards = await response.json()
+// Your frontend makes the WebSocket connection, not trello official.
+//trello official only post on our backend on /trello-webhook.
+//our browser have connected to backed
 
-  for (const board of boards) {
-    console.log("board", board)
-    console.log("full image:", board.prefs.backgroundImage)
-    console.log("color:", board.prefs.backgroundColor)
-  }
-}
+app.head("/trello-webhook", (request, response) => {
+    response.sendStatus(200)
+})
 
-// getAllBoards()
+// Why does Trello need this?
 
+// When you create a webhook, trello official needs to verify that your callback URL is reachable.
 
+// So it can send a HEAD request to:
 
+// /trello-webhook
 
+// Your code responds:
 
-//this only returns cardlists not cards inside cardlist. using loop then we will get all cards of cardlist
-async function getCardList() {
-  const cardListResponse = await fetch(
-    `https://api.trello.com/1/boards/${BOARD_ID}/lists?key=${API_KEY}&token=${TOKEN}`
-  )
+// 200 OK
 
-  const cardLists = await cardListResponse.json()
+// which tells Trello:
 
-  console.log("cardlistsofaBoard", cardLists)
-}
+// "Yes, this URL exists and my server is reachable."
 
-// getCardList()
+app.post("/trello-webhook", (request, response) => {
 
+    //trello official only make post connection to backend, it not connect to scoket
+    console.log("Trello webhook received:")
+    console.log("request body",request.body)
+    // console.log("request ",request)
+    console.log("action--------------------->")
+    console.log(request.body.action)
 
-
-//fetch cards only not their checklist and checkItems.
-
-async function fetchCardsOfCardLists(cardlistId) {
-
-  if (!cardlistId) {
-    return
-  }
-  const url = `https://api.trello.com/1/lists/${cardlistId}/cards?key=${API_KEY}&token=${TOKEN}`
-  const response = await fetch(url)
-  const data = await response.json()
-
-  console.log("cards", data)
-}
-
-// fetchCardsOfCardLists("6abe1fc87635f6c6d7f522e1")
-
-
-
-// this fetches checklists and checkItems of card
-async function fetchCardCheckLists(cardId) {
-  const url = `https://api.trello.com/1/cards/${cardId}/checklists?checkItems=all&key=${API_KEY}&token=${TOKEN}`
-  const response = await fetch(url)
-  const data = await response.json()
-
-  console.log("cradCheckItemAndCheckListdata", data)
-}
-
-// fetchCardCheckLists("6abe1fd1958fded2245ce361")
-
-
-
-async function postNewCardList(name) {
-
-    if(!name){
-        return
-    }
-
-    const url = new URL("https://api.trello.com/1/lists")
-
-    url.searchParams.set("key", API_KEY)
-    url.searchParams.set("token", TOKEN)
-    url.searchParams.set("name", name)
-    url.searchParams.set("idBoard", BOARD_ID)
-
-    const response = await fetch(url, {
-        method: "POST"
+    const message = JSON.stringify({
+        type: "trello-update",
+        data: request.body
     })
 
-    if (!response.ok) {
-        throw new Error(await response.text())
-    }
+    wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(message)
+        }
+    })
 
-    return await response.json()
-}
+    //here trello is sending data to each frontend whenever trello official hit out backend.
+    response.sendStatus(200)
+})
 
-
-
-
-
-// console.log(postNewCardList("addingCardList"))
+app.get("/", (request, response) => {
+    response.send("<h1>Helllllllllo from Home!</h1>")
+})

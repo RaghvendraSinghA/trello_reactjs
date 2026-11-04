@@ -13,6 +13,8 @@ function BoardDetail() {
     //   console.log("board", board)
     //   console.log("board ID", board["id"])
 
+    // console.log("board", board)
+
 
     const { handleFetchCardLists, cardLists} = useContext(DataContext)
 

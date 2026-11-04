@@ -9,7 +9,7 @@ import { Spinner } from "../Spinner/Spinner.jsx"
 
 
 function CardDetailPopUp() {
-    const { setOpenPopUp, popUpData, handleAddChecklist, setPopUpData, currentPopUpCard, handleRenameCard, setCurrentPopCard, fetchedCardsForPopUp } = useContext(DataContext)
+    const { setOpenPopUp, popUpData, handleAddChecklist, setPopUpData, currentPopUpCard, handleRenameCard, setCurrentPopCard, fetchedCardsForPopUp, cards, } = useContext(DataContext)
     // console.log("popUpData", popUpData)
     // console.log("cardId", cardId)
 
@@ -64,6 +64,15 @@ function CardDetailPopUp() {
             cardRenameInput.current.focus()
         }
     }, [isEditingCardName])
+
+
+    // useEffect(()=>{
+    //     console.log("popup restarted bcoz of cardname")
+    // },[cards])
+
+    // useEffect(()=>{
+    //     console.log("popup card renderd", currentPopUpCard)
+    // },[currentPopUpCard])
 
     
 

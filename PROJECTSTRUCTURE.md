@@ -86,4 +86,10 @@ PopUpData---->
 
     --Cardname and cardId is also stored in context store.
 
+    We are currently telling trello to listen one board only
+    boardId --> 6ab0c5f4971b01c62976eb5e.
+
+
+    Webhook, front-end and backend share same port so no need to connect with backend socket by hitting a end point.
+
 ```

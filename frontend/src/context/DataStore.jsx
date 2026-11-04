@@ -11,15 +11,11 @@ function DataProvider({ children }) {
     const [boards, setBoards] = useState([])
     const [cardLists, setCardLists] = useState([])
     const [cards, setCards] = useState([])
-    const [checklists, setChecklists] = useState([])
-    const [checkItems, setCheckItems] = useState([])
     const [loading, setLoading] = useState(false)
     const [fetchedCardListsFromDb, setFetchedCardListsFromDb] = useState(new Set())
     const [fetchedBoardsFromDb, setFetchedBoardsFromDb] = useState(new Set())
     const [openPopUp, setOpenPopUp] = useState(false)
     const [popUpData, setPopUpData] = useState([])
-
-
     const [fetchedCardsForPopUp, setFetchedCardsForPopUp] = useState({})
     const [currentPopUpCard, setCurrentPopCard] = useState({})
 
@@ -701,12 +697,12 @@ function DataProvider({ children }) {
             const updatedPopUpData = prev.map((checklist) => {
 
                 if (checklist["id"] == checkListId) {
-                    const updatedChecklist = {...checklist}
+                    const updatedChecklist = { ...checklist }
                     const checkItems = updatedChecklist["checkItems"]
-                        .filter((checkItem)=>{
+                        .filter((checkItem) => {
                             return checkItem["id"] != checkItemId
                         })
-                    
+
                     updatedChecklist["checkItems"] = checkItems
 
                     return updatedChecklist
@@ -726,9 +722,9 @@ function DataProvider({ children }) {
 
                     if (checklist["id"] == checkListId) {
                         const checklistCheckItems = [...checklist["checkItems"]]
-                        .filter((checkItem)=>{
-                            return checkItem["id"] != checkItemId
-                        })
+                            .filter((checkItem) => {
+                                return checkItem["id"] != checkItemId
+                            })
 
                         const updatedCheckList = { ...checklist }
                         updatedCheckList["checkItems"] = checklistCheckItems
@@ -818,13 +814,610 @@ function DataProvider({ children }) {
 
 
 
+
+    // Websocket setting
+
+    useEffect(() => {
+        const socket = new WebSocket("ws://localhost:3000")
+
+
+        socket.onopen = () => {
+            console.log("WebSocket connected")
+        }
+
+        socket.onmessage = (event) => {
+
+            const data = JSON.parse(event.data)
+
+            // console.log("data recieved from backed")
+            // console.log(data)
+
+            if (data.type === "trello-update") {
+                handleBackendData(data)
+            }
+        }
+
+        socket.onclose = () => {
+            console.log("WebSocket disconnected")
+        }
+
+        socket.onerror = (error) => {
+            console.log("WebSocket error:", error)
+        }
+    }, [currentPopUpCard])
+
+
+
+    const handleBackendData = (socketData) => {
+
+        console.log("currentPopUpCard", currentPopUpCard)
+
+
+        console.log("Backend data from trello web-hook", socketData)
+
+        // 1. CardList CRUD methods
+
+        if (socketData.data.action.type == "createList") {
+            // console.log(socketData.data.action.data.list.id)
+            // console.log(socketData.data.action.data.list.name)
+
+            const id = socketData.data.action.data.list.id
+            const name = socketData.data.action.data.list.name
+            const idBoard = socketData.data.action.data.board.id
+
+            setCardLists((prev) => {
+
+                const filteredCardLists = prev.filter((cardlist) => {
+                    return cardlist["id"] != id
+                })
+
+                return [...filteredCardLists, { id, name, idBoard }]
+            })
+        }
+
+        if (socketData.data.action.type == "updateList") {
+            // action_renamed_list means rename cardlist
+            if (socketData.data.action.display.translationKey == "action_renamed_list") {
+
+                const cardListId = socketData.data.action.data.list.id
+                const newName = socketData.data.action.data.list.name
+
+                setCardLists((prev) => {
+
+                    const updatedCardLists = prev.map((cardlist) => {
+
+                        if (cardlist["id"] == cardListId) {
+                            const updateCardList = { ...cardlist }
+                            updateCardList["name"] = newName
+
+                            return updateCardList
+                        }
+
+                        return cardlist
+                    })
+
+                    return updatedCardLists
+
+                })
+
+            }
+
+            // action_archived_list means delete cardlist
+            if (socketData.data.action.display.translationKey == "action_archived_list") {
+                const cardListId = socketData.data.action.data.list.id
+
+                setCardLists((prev) => {
+
+                    return prev.filter((cardlist) => {
+                        return cardlist["id"] != cardListId
+                    })
+
+                })
+
+            }
+
+        }
+
+
+
+        // 2. Card CRUD methods
+
+
+        if (socketData.data.action.type == "createCard") {
+
+            const cardId = socketData.data.action.data.card.id
+            const cardName = socketData.data.action.data.card.name
+            const cardListId = socketData.data.action.data.list.id
+
+            setCards((prev) => {
+
+                const filteredCards = prev.filter((card) => {
+                    return card["id"] != cardId
+                })
+
+                return [...filteredCards, {
+                    "id": cardId,
+                    "name": cardName, "idList": cardListId
+                }]
+            })
+
+        }
+
+
+
+        if (socketData.data.action.type == "updateCard") {
+
+
+            //2.2 delete card
+            if (socketData.data.action.display.translationKey == "action_archived_card") {
+                const cardId = socketData.data.action.data.card.id
+
+                setCards((prev) => {
+
+                    const filteredCards = prev.filter((card) => {
+                        return card["id"] != cardId
+                    })
+
+                    return filteredCards
+                })
+
+            }
+
+            //2.3 rename card
+
+            if (socketData.data.action.display.translationKey == "action_renamed_card") {
+
+                const cardId = socketData.data.action.data.card.id
+                const newCardName = socketData.data.action.data.card.name
+
+                console.log("renaming card")
+                console.log("cardId", cardId)
+                console.log("newCardName", newCardName)
+
+                if (currentPopUpCard["name"]) {
+                    console.log("inside if of updating current popupname")
+                    setCurrentPopCard((prev) => {
+                        return { ...prev, "name": newCardName }
+                    })
+                }
+
+                setCards((prev) => {
+
+                    const updatedCards = prev.map((card) => {
+                        if (card["id"] == cardId) {
+                            const newCopyOfcard = { ...card }
+                            newCopyOfcard["name"] = newCardName
+
+                            return newCopyOfcard
+                        }
+                        return card
+                    })
+
+                    return updatedCards
+                })
+
+            }
+        }
+
+
+        //3. handeling checklists CRUD operations from backend
+
+        //3.1 add new checklist from backend
+
+
+        if (socketData.data.action.type == "addChecklistToCard") {
+            const cardId = socketData.data.action.data.card.id
+            const cardName = socketData.data.action.data.card.name
+
+            const checkListId = socketData.data.action.data.checklist.id
+            const checkListName = socketData.data.action.data.checklist.name
+
+
+            const newChecklist = {
+                id: checkListId,
+                name: checkListName,
+                idCard: cardId,
+                checkItems: []
+            }
+
+            setPopUpData((prev) => {
+
+                const filteredCheckLists = prev.filter((checklist) => {
+                    return checklist["id"] != checkListId
+                })
+                return [...filteredCheckLists, newChecklist]
+            })
+
+
+            setFetchedCardsForPopUp((prev) => {
+                const updatedFetchedCardsForPopUp = { ...prev }
+                const checklists = [...updatedFetchedCardsForPopUp[cardId]]
+                    .filter((checklist) => {
+                        return checklist["id"] != checkListId
+                    })
+
+                updatedFetchedCardsForPopUp[cardId] = [...checklists, newChecklist]
+                return updatedFetchedCardsForPopUp
+            })
+
+        }
+
+        //3.2 rename checklist
+        if (socketData.data.action.type == "updateChecklist") {
+
+            console.log("updatechecklist if")
+            const cardId = socketData.data.action.data.card.id
+            const cardName = socketData.data.action.data.card.name
+
+            const checkListId = socketData.data.action.data.checklist.id
+            const newCheckListName = socketData.data.action.data.checklist.name
+
+            setPopUpData((prev) => {
+
+                const updatedChecklists = prev.map((checklist) => {
+
+                    if (checklist["id"] == checkListId) {
+                        const newCopyOfCheckList = { ...checklist }
+                        newCopyOfCheckList["name"] = newCheckListName
+
+                        return newCopyOfCheckList
+                    }
+
+                    return checklist
+                })
+                return updatedChecklists
+            })
+
+            setFetchedCardsForPopUp((prev) => {
+                const updatedFetchedCardsForPopUp = { ...prev }
+
+                const checklists = [...updatedFetchedCardsForPopUp[cardId]]
+                    .map((checklist) => {
+                        if (checklist["id"] == checkListId) {
+                            const newUpdatedChecklist = { ...checklist }
+                            newUpdatedChecklist["name"] = newCheckListName
+                            return newUpdatedChecklist
+                        }
+
+                        return checklist
+                    })
+
+                updatedFetchedCardsForPopUp[cardId] = checklists
+                return updatedFetchedCardsForPopUp
+            })
+
+
+
+
+        }
+
+        //3.3 delete checklist
+        if (socketData.data.action.type == "removeChecklistFromCard") {
+
+            const checkListId = socketData.data.action.data.checklist.id
+            const cardId = socketData.data.action.data.card.id
+
+
+            setPopUpData((prev) => {
+
+                const updatedChecklists = prev.filter((checklist) => {
+                    return checklist["id"] != checkListId
+                })
+
+                return updatedChecklists
+            })
+
+            setFetchedCardsForPopUp((prev) => {
+                const updatedFetchedCardsForPopUp = { ...prev }
+
+                const checklists = [...updatedFetchedCardsForPopUp[cardId]]
+                    .filter((checklist) => {
+                        return checklist["id"] != checkListId
+                    })
+
+                updatedFetchedCardsForPopUp[cardId] = checklists
+                return updatedFetchedCardsForPopUp
+            })
+
+
+        }
+
+
+        //4. handeling checkItems CRUD operations from backend 
+
+        //4.1 adding checkItem from backend
+
+        // const [popUpData, setPopUpData] = useState([])
+        // const [fetchedCardsForPopUp, setFetchedCardsForPopUp] = useState({})
+
+        if (socketData.data.action.type == "createCheckItem") {
+            const cardId = socketData.data.action.data.card.id
+            const checkListId = socketData.data.action.data.checklist.id
+            const checkListItemId = socketData.data.action.data.checkItem.id
+            const checkListItemName = socketData.data.action.data.checkItem.name
+
+
+            const newCheckItem = {
+                id: checkListItemId,
+                name: checkListItemName,
+                state: "incomplete",
+                idChecklist: checkListId
+            }
+
+            setPopUpData((prev) => {
+
+                const updatedCheckLists = prev.map((checklist) => {
+                    if (checklist["id"] == checkListId) {
+                        const updatedCheckList = { ...checklist }
+                        const checkItems = [...(updatedCheckList["checkItems"] || [])]
+
+                        const filteredCheckItemIfDuplicate = checkItems.filter((checkItem) => {
+                            return checkItem["id"] != checkListItemId
+                        })
+
+                        updatedCheckList["checkItems"] = [...filteredCheckItemIfDuplicate, newCheckItem]
+
+                        return updatedCheckList
+                    }
+                    return checklist
+                })
+
+                return updatedCheckLists
+
+            })
+
+
+            setFetchedCardsForPopUp((prev) => {
+                const updatedFetchedCardsForPopUp = { ...prev }
+                console.log("updatedFetchedCardsForPopUp", updatedFetchedCardsForPopUp)
+                const checklists = [...(updatedFetchedCardsForPopUp[cardId])]
+
+                const updatedCheckLists = checklists.map((checklist) => {
+
+                    if (checklist["id"] == checkListId) {
+                        const updatedCheckList = { ...checklist }
+                        const checkItems = [...(updatedCheckList["checkItems"] || [])]
+
+                        const filteredCheckItemIfDuplicate = checkItems.filter((checkItem) => {
+                            return checkItem["id"] != checkListItemId
+                        })
+
+                        updatedCheckList["checkItems"] = [...filteredCheckItemIfDuplicate, newCheckItem]
+
+                        return updatedCheckList
+                    }
+                    return checklist
+
+                })
+
+                updatedFetchedCardsForPopUp[cardId] = updatedCheckLists
+                return updatedFetchedCardsForPopUp
+            })
+
+
+
+        }
+
+
+        //4.2 renaming checkItem from backend
+        if (socketData.data.action.type == "updateCheckItem") {
+
+            const cardId = socketData.data.action.data.card.id
+            const checkListId = socketData.data.action.data.checklist.id
+            const checkListItemId = socketData.data.action.data.checkItem.id
+            const checkListItemNewName = socketData.data.action.data.checkItem.name
+
+            setPopUpData((prev) => {
+
+                const updatedCheckLists = prev.map((checklist) => {
+
+                    if (checklist["id"] == checkListId) {
+                        const updatedCheckList = { ...checklist }
+                        const checkItems = [...(updatedCheckList["checkItems"])]
+
+                        const updatedCheckItems = checkItems.map((checkItem) => {
+                            if (checkItem["id"] == checkListItemId) {
+                                const newCheckItem = { ...checkItem }
+                                newCheckItem["name"] = checkListItemNewName
+
+                                return newCheckItem
+                            }
+                            return checkItem
+                        })
+
+                        updatedCheckList["checkItems"] = updatedCheckItems
+
+                        return updatedCheckList
+                    }
+                    return checklist
+                })
+
+                return updatedCheckLists
+            })
+
+
+            setFetchedCardsForPopUp((prev) => {
+                const updatedFetchedCardsForPopUp = { ...prev }
+                const checklists = updatedFetchedCardsForPopUp[cardId]
+
+                const updatedCheckLists = checklists.map((checklist) => {
+
+                    if (checklist["id"] == checkListId) {
+                        const updatedCheckList = { ...checklist }
+                        const checkItems = [...(updatedCheckList["checkItems"])]
+
+                        const updatedCheckItems = checkItems.map((checkItem) => {
+                            if (checkItem["id"] == checkListItemId) {
+                                const newCheckItem = { ...checkItem }
+                                newCheckItem["name"] = checkListItemNewName
+
+                                return newCheckItem
+                            }
+                            return checkItem
+                        })
+
+                        updatedCheckList["checkItems"] = updatedCheckItems
+
+                        return updatedCheckList
+                    }
+                    return checklist
+                })
+
+                updatedFetchedCardsForPopUp[cardId] = updatedCheckLists
+
+                return updatedFetchedCardsForPopUp
+            })
+
+
+        }
+
+
+        //4.3 deleting checkItem from backend
+        if (socketData.data.action.type == "deleteCheckItem") {
+
+            const cardId = socketData.data.action.data.card.id
+            const checkListId = socketData.data.action.data.checklist.id
+            const checkListItemId = socketData.data.action.data.checkItem.id
+
+
+            setPopUpData((prev) => {
+
+                const updatedCheckLists = prev.map((checklist) => {
+
+                    if (checklist["id"] == checkListId) {
+                        const updatedCheckList = { ...checklist }
+                        const checkItems = [...(updatedCheckList["checkItems"])]
+
+                        const updatedCheckItems = checkItems.filter((checkItem) => {
+                            return checkItem["id"] != checkListItemId
+                        })
+
+                        updatedCheckList["checkItems"] = updatedCheckItems
+
+                        return updatedCheckList
+                    }
+                    return checklist
+                })
+
+                return updatedCheckLists
+            })
+
+            setFetchedCardsForPopUp((prev) => {
+
+                const updatedFetchedCardsForPopUp = { ...prev }
+                const checklists = updatedFetchedCardsForPopUp[cardId]
+
+                const updatedCheckLists = checklists.map((checklist) => {
+
+                    if (checklist["id"] == checkListId) {
+                        const updatedCheckList = { ...checklist }
+                        const checkItems = [...(updatedCheckList["checkItems"])]
+
+                        const updatedCheckItems = checkItems.filter((checkItem) => {
+                            return checkItem["id"] != checkListItemId
+                        })
+
+                        updatedCheckList["checkItems"] = updatedCheckItems
+
+                        return updatedCheckList
+                    }
+                    return checklist
+                })
+
+                updatedFetchedCardsForPopUp[cardId] = updatedCheckLists
+                return updatedFetchedCardsForPopUp
+
+            })
+
+
+        }
+
+
+        // 5. Updating state of checkitem
+        if (socketData.data.action.type == "updateCheckItemStateOnCard") {
+            const cardId = socketData.data.action.data.card.id
+            const checkListId = socketData.data.action.data.checklist.id
+            const checkListItemId = socketData.data.action.data.checkItem.id
+            const checkType = socketData.data.action.display.translationKey
+
+            console.log("checkType", checkType)
+
+            setPopUpData((prev) => {
+
+                const updatedCheckLists = prev.map((checklist) => {
+
+                    if (checklist["id"] == checkListId) {
+                        const updatedCheckList = { ...checklist }
+                        const checkItems = [...(updatedCheckList["checkItems"])]
+
+                        const updatedCheckItems = checkItems.map((checkItem) => {
+                            if (checkItem["id"] == checkListItemId) {
+                                const newCheckItem = { ...checkItem }
+
+                                newCheckItem["state"] = checkType == "action_completed_checkitem" ? "complete" : "incomplete"
+
+                                return newCheckItem
+                            }
+                            return checkItem
+                        })
+
+                        updatedCheckList["checkItems"] = updatedCheckItems
+
+                        return updatedCheckList
+                    }
+                    return checklist
+                })
+
+                return updatedCheckLists
+            })
+
+
+            setFetchedCardsForPopUp((prev) => {
+                const updatedFetchedCardsForPopUp = { ...prev }
+                const checklists = updatedFetchedCardsForPopUp[cardId]
+
+                const updatedCheckLists = checklists.map((checklist) => {
+
+                    if (checklist["id"] == checkListId) {
+                        const updatedCheckList = { ...checklist }
+                        const checkItems = [...(updatedCheckList["checkItems"])]
+
+                        const updatedCheckItems = checkItems.map((checkItem) => {
+                            if (checkItem["id"] == checkListItemId) {
+                                const newCheckItem = { ...checkItem }
+                                const state = newCheckItem["state"]
+
+                                newCheckItem["state"] = state == "complete" ? "incomplete" : "complete"
+
+                                return newCheckItem
+                            }
+                            return checkItem
+                        })
+
+                        updatedCheckList["checkItems"] = updatedCheckItems
+
+                        return updatedCheckList
+                    }
+                    return checklist
+                })
+
+                updatedFetchedCardsForPopUp[cardId] = updatedCheckLists
+
+                return updatedFetchedCardsForPopUp
+
+            })
+
+        }
+
+    }
+
+
+    // Websocket setting ends
+
     useEffect(() => {
         handleFetchAllBoards()
     }, [])
 
-    // useEffect(() => {
-    //     console.log("popUpData", popUpData)
-    // }, [popUpData])
 
 
     const store = {
@@ -836,12 +1429,6 @@ function DataProvider({ children }) {
 
         cards,
         setCards,
-
-        checklists,
-        setChecklists,
-
-        checkItems,
-        setCheckItems,
 
         loading,
         setLoading,

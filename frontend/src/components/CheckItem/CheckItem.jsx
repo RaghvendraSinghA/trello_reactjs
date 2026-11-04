@@ -28,9 +28,9 @@ function CheckItem(props) {
     }
 
 
-    const handleCurrentCheckItemRename = (event) =>{
+    const handleCurrentCheckItemRename = (event) => {
         console.log(event.key)
-        if(event.key == "Enter"){
+        if (event.key == "Enter") {
             const newName = renamingCheckItemInput.current.value
             handleRenameCheckItem(cardId, checkItemId, newName, checkListId)
             renamingCheckItemInput.current.value = ""
@@ -40,18 +40,23 @@ function CheckItem(props) {
         }
     }
 
-    const handleCurrentCheckItemDelete = (event) =>{
+    const handleCurrentCheckItemDelete = (event) => {
         handleDeleteCheckItem(cardId, checkListId, checkItemId)
     }
 
 
-    useEffect(()=>{
+    useEffect(() => {
 
-        if(isRenamingCheckItem && renamingCheckItemInput.current){
+        if (isRenamingCheckItem && renamingCheckItemInput.current) {
             renamingCheckItemInput.current.focus()
         }
 
     }, [isRenamingCheckItem])
+
+
+    useEffect(() => {
+        setIsChecked(props.checkItem.state === "complete")
+    }, [props.checkItem.state])
 
 
     return (
@@ -71,12 +76,12 @@ function CheckItem(props) {
                     :
                     <div className="check-item-name">{checkItemName}</div>
                 }
-        
+
             </div>
 
 
             <div className="check-item-actions">
-                <img className="check-item-edit" src={editIcon} onClick={()=>setRenamingCheckItem((prev)=> !prev)}/>
+                <img className="check-item-edit" src={editIcon} onClick={() => setRenamingCheckItem((prev) => !prev)} />
                 <img className="check-item-delete" src={deleteIcon} onClick={handleCurrentCheckItemDelete} />
             </div>
 
